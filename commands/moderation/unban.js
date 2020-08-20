@@ -1,47 +1,18 @@
-const { RichEmbed } = require("discord.js")
-const { redlight } = require("../../colours.json");
+const Discord = require("discord.js");
+const prefix = "+";
 
-module.exports = {
-    config: {
-        name: "unban",
-        description: "Unban a user from the guild!",
-        usage: "!unban",
-        category: "moderation",
-        accessableby: "Administrators",
-        aliases: ["ub", "unbanish"]
-    },
-    run: async (bot, message, args) => {
+module.exports.run = (client, message, args) => {
+if(!message.content.startsWith(prefix)) return ;
+  if(!message.member.hasPermission("BAN_MEMBERS")) return message.channel.send("You do not have the permission.");
+  let user = args[0];
+  if (!user) return message.reply('You must supply a user id.').catch(console.error);
+  message.guild.unban(user);
+  if(user) return message.channel.send(`:white_check_mark: If <@${user}> was banned, he or she has now been unbanned by <@${message.member.id}>.`);
+   
+};
 
-    if(!message.member.hasPermission(["BAN_MEMBERS", "ADMINISTRATOR"])) return message.channel.send("You dont have permission to perform this command!")
-
-		
-	if(isNaN(args[0])) return message.channel.send("You need to provide an ID.")
-    let bannedMember = await bot.fetchUser(args[0])
-        if(!bannedMember) return message.channel.send("Please provide a user id to unban someone!")
-
-    let reason = args.slice(1).join(" ")
-        if(!reason) reason = "No reason given!"
-
-    if(!message.guild.me.hasPermission(["BAN_MEMBERS", "ADMINISTRATOR"])) return message.channel.send("I dont have permission to perform this command!")|
-    message.delete()
-    try {
-        message.guild.unban(bannedMember, reason)
-        message.channel.send(`${bannedMember.tag} has been unbanned from the guild!`)
-    } catch(e) {
-        console.log(e.message)
-    }
-
-    let embed = new RichEmbed()
-    .setColor(redlight)
-    .setAuthor(`${message.guild.name} Modlogs`, message.guild.iconURL)
-    .addField("Moderation:", "unban")
-    .addField("Moderated on:", `${bannedMember.username} (${bannedMember.id})`)
-    .addField("Moderator:", message.author.username)
-    .addField("Reason:", reason)
-    .addField("Date:", message.createdAt.toLocaleString())
-    
-        let sChannel = message.guild.channels.find(c => c.name === "tut-modlogs")
-        sChannel.send(embed)
-
-    }
+module.exports.help = {
+  name: 'unban',
+  description: 'Unbans the user.',
+  usage: 'unban [user_id]'
 }
